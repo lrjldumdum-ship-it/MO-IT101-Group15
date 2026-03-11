@@ -49,7 +49,7 @@ public class MotorPH_BasicPayrollSystem {
     
     
     
-    //Returns EMployee details from CSV
+    //Returns Employee details from CSV
     public static String returnEmployeeDetails (String employeeID) {
         try (BufferedReader br = new BufferedReader(new FileReader(employeeDetailsfile))) {
 
@@ -161,3 +161,4 @@ public class MotorPH_BasicPayrollSystem {
     }
     
 }
+
