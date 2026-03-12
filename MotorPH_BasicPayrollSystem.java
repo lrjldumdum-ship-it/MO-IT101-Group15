@@ -114,22 +114,18 @@ public class MotorPH_BasicPayrollSystem {
             
             if (correctEmployeeNumber == true) {
                 
-                //Temporary Info
+                
                 System.out.println();
                 String employeeDetails = returnEmployeeDetails(employeeNumber);
                 
                 System.out.print(employeeDetails);
             } else {
                 System.out.print("Employee number does not exist.");
-            }   
-        } else {
-            System.out.print("Incorrect Username and/or Password.");
-            System.exit(0);
-        }
-        
-        
+            } 
+            
+            
         //payroll staff logic access logic
-        if(userName.equals(correctUsernamePyrlEmp) && password.equals(correctPassword)) {
+        } else if (userName.equals(correctUsernamePyrlEmp) && password.equals(correctPassword)) {
             String pyrEmpTextBlock = """
                 1.Type "1" to Process Payroll
                 2.Type 'exit' to exit the program.     
@@ -158,7 +154,15 @@ public class MotorPH_BasicPayrollSystem {
                 }
             }
         }
+            
+        
+        else {
+            System.out.print("Incorrect Username and/or Password.");
+        }
+        
+        
     }
     
 }
+
 
