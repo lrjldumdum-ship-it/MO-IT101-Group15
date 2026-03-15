@@ -1,1 +1,74 @@
+# MotorPH Bank Payroll System
 
+## Program Overview
+The **MotorPH Bank Payroll System** is a Java console-based application developed to process employee payroll using data stored in CSV files.
+
+When the program starts, users are required to log in by entering a valid **username and password**. Based on the user’s role (employee or payroll staff), the system displays different menu options.
+
+The application reads employee information and attendance records from external **CSV files**. Using the attendance data, the system calculates the **total hours worked** based on the standard working schedule of **8:00 AM to 5:00 PM**. Any hours worked beyond the regular schedule are also included in the computation.
+
+After calculating the total working hours, the system determines the **gross salary** based on the employee’s **hourly rate**. The program then computes the required **government deductions**, including:
+
+- SSS  
+- PhilHealth  
+- Pag-IBIG  
+- Income Tax  
+
+These deductions are applied during the second stage of the payroll computation.
+
+Finally, the system displays the payroll details, which include:
+
+- Cutoff dates  
+- Total hours worked  
+- Gross salary  
+- Deductions  
+- Net salary  
+
+Payroll staff can process payroll for **one employee or all employees**, while employees can **view their personal information** by entering their **employee number**.
+
+---
+
+# Team Details
+
+## John Linnard Dumdum
+- Set up and configured the development environment, including the IDE and version control system using **Git/GitHub**.
+- Organized and facilitated team meetings to review project requirements and plan the overall system design.
+- Guided team members to ensure they clearly understood their assigned tasks and helped coordinate the division of work within the group.
+- Collaborated with Arlynne in developing the **Employee class/structure** for the system.
+- Integrated the different modules developed by team members into the final program.
+- Performed system testing, debugging, and code improvements to ensure the application runs correctly and efficiently.
+
+---
+
+## Arlynne Alvarez
+- Implemented deduction calculations and developed the final summary display showing **Gross Salary, Deductions, and Net Salary**.
+- Collaborated in developing the **Employee class/structure**, including attributes such as Employee Number, Name, Position, and Hourly Rate.
+- Assisted in implementing the function that retrieves employee data from the **Google Sheets database**.
+- Helped format and organize the display of employee information in the program’s output.
+
+---
+
+## Katherine Sacbayana
+- Developed the logic used to calculate the **total weekly hours worked** by employees.
+- Created the function responsible for retrieving employee **log-in and log-out records**.
+- Implemented the computation for determining the **total weekly working hours**.
+- Programmed the calculation of **gross weekly salary** based on the computed hours worked.
+- Worked together with Paulo to implement the **deduction logic for late log-ins**.
+
+---
+
+## Ma. Pamela Beanca Estimada
+- Integrated salary deductions into the **gross salary computation** within the system.
+- Developed the logic for calculating the **net weekly salary** after all deductions are applied.
+- Defined and set the **constant values for government-mandated deductions and contributions** used in the program.
+- Applied the required government deductions and formatted the **gross salary output to two decimal places** for accuracy and clarity.
+- Organized and prepared the **README file in GitHub** to document the project details, setup instructions, and system overview.
+- Facilitated the documentation of **each member’s contributions** to ensure proper acknowledgment of tasks completed by the team.
+
+---
+
+## Marilfel Aparri
+- Implemented the function to retrieve **employee information from the Google Sheets database**.
+- Assisted in verifying and organizing employee data retrieved from the database.
+- Helped test the data retrieval function to ensure accurate employee information is displayed in the system.
+- Supported the team by checking the correctness of employee records used in the program.
