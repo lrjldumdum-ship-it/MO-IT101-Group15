@@ -22,9 +22,47 @@ import java.util.Locale;
 public class MotorPH_BasicPayrollSystem {
 
     /**
+     * MotorPH Basic Payroll System
      * 
-     * @param employeeID the employee number entered by the user
-     * @return the employee information if found, otherwise "Employee does not exist"
+     * This program processes employee payroll data by reading employee details
+     * and attendance records from CSV files. It computes total working hours,
+     * calculates gross salary, applies government-mandated deductions, and
+     * generates payroll reports for individual or all employees.
+     * 
+     * Key Features:
+     * - Employee lookup and validation
+     * - Attendance-based hour computation with business rules
+     * - Payroll calculation including:
+     *   • Gross salary
+     *   • SSS contribution
+     *   • PhilHealth contribution
+     *   • Pag-IBIG contribution
+     *   • Withholding tax
+     * - Payroll report generation (per employee or all employees)
+     * 
+     * Business Rules Applied:
+     * - Working hours are limited from 8:00 AM to 5:00 PM
+     * - 15-minute grace period for late logins
+     * - 1-hour lunch break deduction for shifts longer than 4 hours
+     * - Government deductions are computed based on salary brackets
+     * - Payroll is divided into two cutoffs per month (1–15 and 16–end)
+     * 
+     * File Dependencies:
+     * - Employee Details CSV file
+     * - Attendance Record CSV file
+     * 
+     * Assumptions:
+     * - CSV files are properly formatted
+     * - Required columns exist at fixed indices
+     * - Salary and rate fields are valid numeric values
+     * 
+     * Limitations:
+     * - No database integration (file-based only)
+     * - No validation for malformed CSV rows beyond basic parsing
+     * - Payroll logic is simplified and may not fully reflect real-world policies
+     * 
+     * @author 
+     * @version 1.0
      */
     
     static String employeeDetailsfile = "src/resources/MotorPH_Employee Data - Employee Details.csv";
