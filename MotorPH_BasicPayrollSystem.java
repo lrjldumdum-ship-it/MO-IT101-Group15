@@ -188,7 +188,10 @@ public class MotorPH_BasicPayrollSystem {
 
         return totalHours;
     }
-    
+
+
+
+    // ===================== GOVERNMENT DEDUCTION CALCULATIONS =====================
 
     //Calculates PagIbig Contributions
     public static double pagIbigContribution(double basicSalary) {
@@ -289,65 +292,85 @@ public class MotorPH_BasicPayrollSystem {
 }
     
     
-    //Monthly Payroll Report
-    public static String monthlyPayrollReport(
-        String employeeID,
-        int year,
-        int month,
-        double hourlyRate,
-        double basicSalary,
-        String employeeName,
-        String birthday) {
-        
-        
-        String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-        String capitalizedMonthName = monthName.toUpperCase();
+    // ===================== PAYROLL CALCULATIONS =====================
+    
+    // Computes gross salary based on hours worked
+    public static double computeGross(double hours, double hourlyRate) {
+        return hours * hourlyRate;
+    }
 
+    // Computes all government deductions
+    public static double computeTotalDeductions(double grossSalary) {
+        double philHealth = philHealthContribution(grossSalary);
+        double pagIbig = pagIbigContribution(grossSalary);
+        double sss = sssContribution(grossSalary);
+
+        return philHealth + pagIbig + sss;
+    }
+
+    // Computes final tax
+    public static double computeTax(double grossSalary, double deductions) {
+        double taxableIncome = grossSalary - deductions;
+        return withholdingTax(taxableIncome);
+    }
+
+
+    
+    // ===================== MONTHLY REPORT =====================
+    public static String monthlyPayrollReport(
+            String employeeID,
+            int year,
+            int month,
+            double hourlyRate,
+            double basicSalary,
+            String employeeName,
+            String birthday) {
+
+        String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
+
+        // Cutoff periods
         LocalDate start1 = LocalDate.of(year, month, 1);
         LocalDate end1 = LocalDate.of(year, month, 15);
 
         LocalDate start2 = LocalDate.of(year, month, 16);
         LocalDate end2 = start2.withDayOfMonth(start2.lengthOfMonth());
 
-        double hoursCutoff1 = computeTotalHours(employeeID, start1, end1, attendanceRecordfile);
-        double hoursCutoff2 = computeTotalHours(employeeID, start2, end2, attendanceRecordfile);
+        // ===================== HOURS =====================
+        double hours1 = computeTotalHours(employeeID, start1, end1, attendanceRecordfile);
+        double hours2 = computeTotalHours(employeeID, start2, end2, attendanceRecordfile);
 
-        double grossSalary1 = hourlyRate * hoursCutoff1;
-        double grossSalary2 = hourlyRate * hoursCutoff2;
-        double monthlyGross = grossSalary1 + grossSalary2;
+        // ===================== GROSS PAY =====================
+        double gross1 = computeGross(hours1, hourlyRate);
+        double gross2 = computeGross(hours2, hourlyRate);
+        double monthlyGross = gross1 + gross2;
 
-        double philHealth = philHealthContribution(monthlyGross);
-        double pagIbig = pagIbigContribution(monthlyGross);
-        double sss = sssContribution(monthlyGross);
+        // ===================== DEDUCTIONS =====================
+        double deductions = computeTotalDeductions(monthlyGross);
+        double tax = computeTax(monthlyGross, deductions);
 
-        double totalDeductions = sss + pagIbig + philHealth;
+        // ===================== NET PAY =====================
+        double net1 = gross1; // no deductions in first cutoff
+        double net2 = gross2 - deductions - tax;
 
-        double taxableIncome = monthlyGross - totalDeductions;
-        double withholdingTax = withholdingTax(taxableIncome);
-
-        double netSalary1 = grossSalary1;
-        double netSalary2 = grossSalary2 - totalDeductions - withholdingTax;
-
+        // ===================== OUTPUT =====================
         return
-            "Month: " + capitalizedMonthName + " " + year + "\n" +
-            "Cutoff Date: " + start1 + " to " + end1 + "\n" +
-            "Total Hours Worked: " + hoursCutoff1 + "\n" +
-            "Gross Salary: PHP " + grossSalary1 + "\n" +
-            "Net Salary: PHP " + netSalary1 + "\n\n" +
+            "Month: " + monthName + " " + year + "\n" +
+            "Cutoff: " + start1 + " to " + end1 + "\n" +
+            "Hours: " + hours1 + "\n" +
+            "Gross: PHP " + gross1 + "\n" +
+            "Net: PHP " + net1 + "\n\n" +
 
-            "Cutoff Date: " + start2 + " to " + end2 + " (Second payout includes all deductions)\n" +
-            "Total Hours Worked: " + hoursCutoff2 + "\n" +
-            "Gross Salary: PHP " + grossSalary2 + "\n" +
+            "Cutoff: " + start2 + " to " + end2 + "\n" +
+            "Hours: " + hours2 + "\n" +
+            "Gross: PHP " + gross2 + "\n" +
 
-            "Each Deduction:\n" +
-            "  SSS: PHP " + sss + "\n" +
-            "  PhilHealth: PHP " + philHealth + "\n" +
-            "  Pag-IBIG: PHP " + pagIbig + "\n" +
-            "  Tax: PHP " + withholdingTax + "\n" +
+            "Deductions:\n" +
+            "Total: PHP " + deductions + "\n" +
+            "Tax: PHP " + tax + "\n" +
+            "Net: PHP " + net2 + "\n\n";
+    }
 
-            "Total Deductions: PHP " + totalDeductions + "\n" +
-            "Net Salary: PHP " + netSalary2 + "\n\n";
-}
+
     
     //Payroll Report for One Employee
     public static String payrollReport(String employeeID) {
