@@ -120,6 +120,35 @@ public class MotorPH_BasicPayrollSystem {
         
     
     
+     // ===================== HOURS COMPUTATION =====================  
+    
+    public static double computeDailyHours(LocalTime login, LocalTime logout) {
+
+        LocalTime startWork = LocalTime.of(8, 0);
+        LocalTime endWork = LocalTime.of(17, 0);
+
+        // Ensure employees are only credited within official working hours
+        if (login.isBefore(startWork)) login = startWork;
+        if (logout.isAfter(endWork)) logout = endWork;
+
+        // Allow small grace period for lateness (<=15 mins treated as on-time)
+        if (login.isAfter(startWork) && login.isBefore(startWork.plusMinutes(15))) {
+            login = startWork;
+        }
+
+        if (logout.isAfter(login)) {
+            double hours = Duration.between(login, logout).toMinutes() / 60.0;
+
+            // Deduct 1-hour lunch break for long shifts
+            if (hours > 4) hours -= 1;
+
+            return hours;
+        }
+
+        return 0;
+    }
+
+    
     public static double computeTotalHours(String employeeID,
                                        LocalDate startDate,
                                        LocalDate endDate,
@@ -127,9 +156,6 @@ public class MotorPH_BasicPayrollSystem {
 
         double totalHours = 0;
 
-        LocalTime startWork = LocalTime.of(8, 0);
-        LocalTime endWork = LocalTime.of(17, 0);
-        
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm");
 
@@ -144,40 +170,15 @@ public class MotorPH_BasicPayrollSystem {
 
                 String id = data[0];
                 LocalDate date = LocalDate.parse(data[3], dateFormatter);
-                LocalTime login = LocalTime.parse(data[4], timeFormatter);
-                LocalTime logout = LocalTime.parse(data[5], timeFormatter);
 
                 if (id.equals(employeeID)
                         && !date.isBefore(startDate)
                         && !date.isAfter(endDate)) {
 
-                    // Clamp login to 8 AM
-                    if (login.isBefore(startWork)) {
-                        login = startWork;
-                    }
+                    LocalTime login = LocalTime.parse(data[4], timeFormatter);
+                    LocalTime logout = LocalTime.parse(data[5], timeFormatter);
 
-                    // Ignore small lateness (example: 8:05 still counts as 8:00)
-                    if (login.isAfter(startWork) && login.isBefore(startWork.plusMinutes(15))) {
-                        login = startWork;
-                    }
-
-                    // Clamp logout to 5 PM
-                    if (logout.isAfter(endWork)) {
-                        logout = endWork;
-                    }
-
-                    if (logout.isAfter(login)) {
-
-                        Duration work = Duration.between(login, logout);
-                        double hours = work.toMinutes() / 60.0;
-
-                        // subtract lunch break if full day
-                        if (hours > 4) {
-                            hours -= 1;
-                        }
-
-                            totalHours += hours;
-                    }
+                    totalHours += computeDailyHours(login, logout);
                 }
             }
 
@@ -187,16 +188,6 @@ public class MotorPH_BasicPayrollSystem {
 
         return totalHours;
     }
-    
-    
-    //Calculates PhilHealth Contribution
-    public static double philHealthContribution (double basicSalary) {
-    
-        double monthlyPremium = basicSalary * 0.03; // 3% of basic salary
-        double employeeContribution = monthlyPremium * 0.5; // employee pays 50%
-
-        return employeeContribution;
-}
     
 
     //Calculates PagIbig Contributions
