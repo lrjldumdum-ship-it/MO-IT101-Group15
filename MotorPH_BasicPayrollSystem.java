@@ -67,6 +67,45 @@ public class MotorPH_BasicPayrollSystem {
     
     static String employeeDetailsfile = "src/resources/MotorPH_Employee Data - Employee Details.csv";
     static String attendanceRecordfile = "src/resources/MotorPH_Employee Data - Attendance Record.csv";
+
+    // Loads the Attendance File once
+    public static List<String[]> loadAttendanceData(String filePath) {
+
+        List<String[]> records = new ArrayList<>();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm");
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+
+            String line;
+            br.readLine(); // skip header
+
+            while ((line = br.readLine()) != null) {
+
+                String[] data = line.split(",");
+
+                // Convert and store parsed values immediately
+                String employeeID = data[0];
+                LocalDate date = LocalDate.parse(data[3], dateFormatter);
+                LocalTime login = LocalTime.parse(data[4], timeFormatter);
+                LocalTime logout = LocalTime.parse(data[5], timeFormatter);
+
+                // Store as String[] 
+                records.add(new String[] {
+                    employeeID,
+                    date.toString(),
+                    login.toString(),
+                    logout.toString()
+                });
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error reading attendance file");
+        }
+
+        return records;
+    }
     
     //Checks if the employee ID is in the CSV
     public static Boolean findEmployee(String employeeID) {
@@ -149,45 +188,31 @@ public class MotorPH_BasicPayrollSystem {
     }
 
     
-    public static double computeTotalHours(String employeeID,
-                                       LocalDate startDate,
-                                       LocalDate endDate,
-                                       String filePath) {
+    public static double computeTotalHours(
+        String employeeID,
+        LocalDate startDate,
+        LocalDate endDate,
+        List<String[]> records) {
 
         double totalHours = 0;
 
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm");
+        for (String[] record : records) {
 
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String id = record[0];
+            LocalDate date = LocalDate.parse(record[1]);
+            LocalTime login = LocalTime.parse(record[2]);
+            LocalTime logout = LocalTime.parse(record[3]);
 
-            String line;
-            br.readLine(); // skip header
+            if (id.equals(employeeID)
+                    && !date.isBefore(startDate)
+                    && !date.isAfter(endDate)) {
 
-            while ((line = br.readLine()) != null) {
-
-                String[] data = line.split(",");
-
-                String id = data[0];
-                LocalDate date = LocalDate.parse(data[3], dateFormatter);
-
-                if (id.equals(employeeID)
-                        && !date.isBefore(startDate)
-                        && !date.isAfter(endDate)) {
-
-                    LocalTime login = LocalTime.parse(data[4], timeFormatter);
-                    LocalTime logout = LocalTime.parse(data[5], timeFormatter);
-
-                    totalHours += computeDailyHours(login, logout);
-                }
+                totalHours += computeDailyHours(login, logout);
             }
-
-        } catch (IOException e) {
-            System.out.println("Error reading attendance file");
         }
 
         return totalHours;
-    }
+}
 
 
 
@@ -417,6 +442,8 @@ public class MotorPH_BasicPayrollSystem {
 
         if (emp == null) return "Employee not found.";
 
+        List<String[]> records = loadAttendanceData(attendanceRecordfile);
+
         String report =
         """
         ==========================================
@@ -434,7 +461,8 @@ public class MotorPH_BasicPayrollSystem {
                     emp[0],
                     2024,
                     month,
-                    hourlyRate
+                    hourlyRate,
+                    records
             );
 
             report += formatMonthlyReport(2024, month, result);
@@ -448,6 +476,7 @@ public class MotorPH_BasicPayrollSystem {
     public static String payrollReportAllEmployees() {
 
         String report = "";
+        List<String[]> records = loadAttendanceData(attendanceRecordfile);
 
         try (BufferedReader br = new BufferedReader(new FileReader(employeeDetailsfile))) {
 
