@@ -291,30 +291,30 @@ public class MotorPH_BasicPayrollSystem {
     
     
     //Calculates Withholding Tax
-    public static double withholdingTax(double salary) {
+    public static double withholdingTax(double monthlySalary) {
 
-        if (salary <= 20832) {
+        if (monthlySalary <= 20832) {
             return 0;
         } 
 
-        else if (salary < 33333) {
+        else if (monthlySalary < 33333) {
             return (salary - 20833) * 0.20;
         } 
 
-        else if (salary < 66667) {
-            return 2500 + (salary - 33333) * 0.25;
+        else if (monthlySalary < 66667) {
+            return 2500 + (monthlySalary - 33333) * 0.25;
         } 
 
-        else if (salary < 166667) {
-            return 10833 + (salary - 66667) * 0.30;
+        else if (monthlySalary < 166667) {
+            return 10833 + (monthlySalary - 66667) * 0.30;
         } 
 
-        else if (salary < 666667) {
-            return 40833.33 + (salary - 166667) * 0.32;
+        else if (monthlySalary < 666667) {
+            return 40833.33 + (monthlySalary - 166667) * 0.32;
         } 
 
         else {
-            return 200833.33 + (salary - 666667) * 0.35;
+            return 200833.33 + (monthlySalary - 666667) * 0.35;
         }
 }
     
