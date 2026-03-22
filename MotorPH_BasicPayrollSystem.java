@@ -324,12 +324,9 @@ public class MotorPH_BasicPayrollSystem {
         String employeeID = data[0];
         String employeeName = data[2] + ", " + data[1];
         String birthday = data[3];
-
         String hourlyRate = data[18].replace("\"", "").replace(",", "").trim();
-        String basicSalary = data[14].replace("\"", "").replace(",", "").trim();
 
-        // return as array to avoid creating a class
-        return new String[] { employeeID, employeeName, birthday, hourlyRate, basicSalary };
+        return new String[] { employeeID, employeeName, birthday, hourlyRate};
     }
 
 
