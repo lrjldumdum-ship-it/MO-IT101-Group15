@@ -316,186 +316,191 @@ public class MotorPH_BasicPayrollSystem {
 
 
     
-    // ===================== MONTHLY REPORT =====================
-    public static String monthlyPayrollReport(
+    // ===================== EMPLOYEE MONTHLY REPORT =====================
+    
+    // Parse Employee Data
+    private static String[] parseEmployeeData(String[] data) {
+
+        String employeeID = data[0];
+        String employeeName = data[2] + ", " + data[1];
+        String birthday = data[3];
+
+        String hourlyRate = data[18].replace("\"", "").replace(",", "").trim();
+        String basicSalary = data[14].replace("\"", "").replace(",", "").trim();
+
+        // return as array to avoid creating a class
+        return new String[] { employeeID, employeeName, birthday, hourlyRate, basicSalary };
+    }
+
+
+    // Employee's Payroll Calculations
+    public static double[] calculatePayroll(
             String employeeID,
             int year,
             int month,
-            double hourlyRate,
-            double basicSalary,
-            String employeeName,
-            String birthday) {
+            double hourlyRate) {
 
-        String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
-
-        // Cutoff periods
         LocalDate start1 = LocalDate.of(year, month, 1);
         LocalDate end1 = LocalDate.of(year, month, 15);
 
         LocalDate start2 = LocalDate.of(year, month, 16);
         LocalDate end2 = start2.withDayOfMonth(start2.lengthOfMonth());
 
-        // ===================== HOURS =====================
         double hours1 = computeTotalHours(employeeID, start1, end1, attendanceRecordfile);
         double hours2 = computeTotalHours(employeeID, start2, end2, attendanceRecordfile);
 
-        // ===================== GROSS PAY =====================
         double gross1 = computeGross(hours1, hourlyRate);
         double gross2 = computeGross(hours2, hourlyRate);
         double monthlyGross = gross1 + gross2;
 
-        // ===================== DEDUCTIONS =====================
         double deductions = computeTotalDeductions(monthlyGross);
         double tax = computeTax(monthlyGross, deductions);
 
-        // ===================== NET PAY =====================
-        double net1 = gross1; // no deductions in first cutoff
+        double net1 = gross1;
         double net2 = gross2 - deductions - tax;
 
-        // ===================== OUTPUT =====================
+        // return all computed values in order
+        return new double[] {
+            hours1, hours2,
+            gross1, gross2,
+            monthlyGross,
+            deductions,
+            tax,
+            net1, net2
+        };
+    }
+
+
+    public static String formatMonthlyReport(
+            int year,
+            int month,
+            double[] r) {
+
+        String monthName = Month.of(month)
+                .getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+                .toUpperCase();
+
         return
             "Month: " + monthName + " " + year + "\n" +
-            "Cutoff: " + start1 + " to " + end1 + "\n" +
-            "Hours: " + hours1 + "\n" +
-            "Gross: PHP " + gross1 + "\n" +
-            "Net: PHP " + net1 + "\n\n" +
+            "First Cutoff Hours: " + r[0] + "\n" +
+            "First Gross: PHP " + r[2] + "\n" +
+            "First Net: PHP " + r[7] + "\n\n" +
 
-            "Cutoff: " + start2 + " to " + end2 + "\n" +
-            "Hours: " + hours2 + "\n" +
-            "Gross: PHP " + gross2 + "\n" +
+            "Second Cutoff Hours: " + r[1] + "\n" +
+            "Second Gross: PHP " + r[3] + "\n" +
 
-            "Deductions:\n" +
-            "Total: PHP " + deductions + "\n" +
-            "Tax: PHP " + tax + "\n" +
-            "Net: PHP " + net2 + "\n\n";
+            "Deductions: PHP " + r[5] + "\n" +
+            "Tax: PHP " + r[6] + "\n" +
+            "Second Net: PHP " + r[8] + "\n\n";
     }
 
 
     
-    //Payroll Report for One Employee
     public static String payrollReport(String employeeID) {
 
-    String employeeName = "";
-    String birthday = "";
-    double hourlyRate = 0;
-    double basicSalary = 0;
+        String[] emp = null;
 
-    // Read employee details
-    try (BufferedReader br = new BufferedReader(new FileReader(employeeDetailsfile))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(employeeDetailsfile))) {
 
-        String line;
+            String line;
 
-        while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
 
-            String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
-            if (data[0].equals(employeeID)) {
-
-                employeeName = data[2] + ", " + data[1];
-                birthday = data[3];
-                hourlyRate = Double.parseDouble(data[18].replace("\"", "").trim());
-                basicSalary = Double.parseDouble(data[14].replace("\"","").replace(",","").trim());
-
-                break;
+                if (data[0].equals(employeeID)) {
+                    emp = parseEmployeeData(data);
+                    break;
+                }
             }
+
+        } catch (IOException e) {
+            System.out.println("Error reading employee file");
         }
 
-    } catch (IOException e) {
-        System.out.println("Error reading employee file");
-    }
+        if (emp == null) return "Employee not found.";
 
-    String report =
-    """
-    ==========================================
-          MotorPH PAYROLL SUMMARY REPORT      
-    ==========================================
-    Employee #: """ + employeeID + "\n" +
-    "Employee Name: " + employeeName + "\n" +
-    "Birthday: " + birthday + "\n\n";
+        String report =
+        """
+        ==========================================
+              MotorPH PAYROLL SUMMARY REPORT      
+        ==========================================
+        Employee #: """ + emp[0] + "\n" +
+        "Employee Name: " + emp[1] + "\n" +
+        "Birthday: " + emp[2] + "\n\n";
 
-    for (int month = 6; month <= 12; month++) {
+        double hourlyRate = Double.parseDouble(emp[3]);
 
-        report += monthlyPayrollReport(
-            employeeID,
-            2024,
-            month,
-            hourlyRate,
-            basicSalary,
-            employeeName,
-            birthday
-        );
-    }
+        for (int month = 6; month <= 12; month++) {
 
-    return report;
-}
-    
-    
-    //Payroll Report for ALL Employees
-    public static String payrollReportAllEmployees() {
-
-    String report = "";
-
-    try (BufferedReader br = new BufferedReader(new FileReader(employeeDetailsfile))) {
-
-        String line;
-
-        br.readLine(); // skip CSV header
-
-        while ((line = br.readLine()) != null) {
-
-            // CSV-safe split to handle commas inside quotes
-            String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-
-            // Extract employee details
-            String employeeID = data[0];
-            String employeeName = data[2] + ", " + data[1];
-            String birthday = data[3];
-
-            double hourlyRate = 0;
-            double basicSalary = 0;
-
-            // Parse numeric fields safely
-            try {
-                hourlyRate = Double.parseDouble(data[18].replace("\"", "").replace(",", "").trim());
-                basicSalary = Double.parseDouble(data[14].replace("\"", "").replace(",", "").trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Error parsing numeric fields for employee: " + employeeID);
-                continue; // skip this employee if numeric data is invalid
-            }
-
-            // Header for this employee (same as single-employee report)
-            report +=
-            """
-            ==========================================
-                  MotorPH PAYROLL SUMMARY REPORT      
-            ==========================================
-            Employee #: """ + employeeID + "\n" +
-            "Employee Name: " + employeeName + "\n" +
-            "Birthday: " + birthday + "\n\n";
-
-            // Generate monthly payroll (June to December)
-            for (int month = 6; month <= 12; month++) {
-                report += monthlyPayrollReport(
-                    employeeID,
+            double[] result = calculatePayroll(
+                    emp[0],
                     2024,
                     month,
-                    hourlyRate,
-                    basicSalary,
-                    employeeName,
-                    birthday
-                );
-            }
+                    hourlyRate
+            );
 
-            // Small separator between employees
-            report += "\n--------------------- End of Report ---------------------\n\n";
+            report += formatMonthlyReport(2024, month, result);
         }
 
-    } catch (IOException e) {
-        System.out.println("Error reading employee file");
+        return report;
     }
 
-    return report;
-}
+
+    
+    public static String payrollReportAllEmployees() {
+
+        String report = "";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(employeeDetailsfile))) {
+
+            String line;
+            br.readLine(); // skip header
+
+            while ((line = br.readLine()) != null) {
+
+                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+
+                String[] emp;
+
+                try {
+                    emp = parseEmployeeData(data);
+                } catch (Exception e) {
+                    continue; // skip invalid rows
+                }
+
+                report +=
+                """
+                ==========================================
+                      MotorPH PAYROLL SUMMARY REPORT      
+                ==========================================
+                Employee #: """ + emp[0] + "\n" +
+                "Employee Name: " + emp[1] + "\n" +
+                "Birthday: " + emp[2] + "\n\n";
+
+                double hourlyRate = Double.parseDouble(emp[3]);
+
+                for (int month = 6; month <= 12; month++) {
+
+                    double[] result = calculatePayroll(
+                            emp[0],
+                            2024,
+                            month,
+                            hourlyRate
+                    );
+
+                    report += formatMonthlyReport(2024, month, result);
+                }
+
+                report += "\n--------------------- End of Report ---------------------\n\n";
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error reading employee file");
+        }
+
+        return report;
+    }
     
     
     
