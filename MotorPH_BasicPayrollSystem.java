@@ -371,7 +371,8 @@ public class MotorPH_BasicPayrollSystem {
             String employeeID,
             int year,
             int month,
-            double hourlyRate) {
+            double hourlyRate,
+            List<String[]> records) {
 
         LocalDate start1 = LocalDate.of(year, month, 1);
         LocalDate end1 = LocalDate.of(year, month, 15);
@@ -523,7 +524,8 @@ public class MotorPH_BasicPayrollSystem {
                             emp[0],
                             2024,
                             month,
-                            hourlyRate
+                            hourlyRate,
+                            records
                     );
 
                     report += formatMonthlyReport(2024, month, result);
