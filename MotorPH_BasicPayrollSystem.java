@@ -379,8 +379,8 @@ public class MotorPH_BasicPayrollSystem {
         LocalDate start2 = LocalDate.of(year, month, 16);
         LocalDate end2 = start2.withDayOfMonth(start2.lengthOfMonth());
 
-        double hours1 = computeTotalHours(employeeID, start1, end1, attendanceRecordfile);
-        double hours2 = computeTotalHours(employeeID, start2, end2, attendanceRecordfile);
+        double hours1 = computeTotalHours(employeeID, start1, end1, records);
+        double hours2 = computeTotalHours(employeeID, start2, end2, records);
 
         double gross1 = computeGross(hours1, hourlyRate);
         double gross2 = computeGross(hours2, hourlyRate);
