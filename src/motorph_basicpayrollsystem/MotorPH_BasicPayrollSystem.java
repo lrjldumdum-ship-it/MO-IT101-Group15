@@ -636,7 +636,7 @@ public class MotorPH_BasicPayrollSystem {
             System.out.print("Incorrect Username and/or Password.");
         }
         
-        
+         scanner.close();
     }
     
 }
