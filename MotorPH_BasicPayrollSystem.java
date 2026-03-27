@@ -220,6 +220,15 @@ public class MotorPH_BasicPayrollSystem {
 
     // ===================== GOVERNMENT DEDUCTION CALCULATIONS =====================
 
+    //Calculates PhilHealth Contribution
+    public static double philHealthContribution (double basicSalary) {
+    
+        double monthlyPremium = basicSalary * 0.03; // 3% of basic salary
+        double employeeContribution = monthlyPremium * 0.5; // employee pays 50%
+
+        return employeeContribution;
+}
+
     //Calculates PagIbig Contributions
     public static double pagIbigContribution(double basicSalary) {
 
