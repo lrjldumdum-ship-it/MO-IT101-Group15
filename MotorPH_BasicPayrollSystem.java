@@ -307,7 +307,7 @@ public class MotorPH_BasicPayrollSystem {
         } 
 
         else if (monthlySalary < 33333) {
-            return (salary - 20833) * 0.20;
+            return (monthlySalary - 20833) * 0.20;
         } 
 
         else if (monthlySalary < 66667) {
